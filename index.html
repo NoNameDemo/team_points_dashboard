@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Points Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: linear-gradient(to right, #eef2f3, #8e9eab);
+        font-family: "Segoe UI", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen p-4">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+          🏆 Team Points Dashboard
+        </h1>
+        <a
+          href="admin.html"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+        >
+          🔐 Admin
+        </a>
+      </div>
+
+      <div
+        id="teamGrid"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      ></div>
+    </div>
+
+    <script>
+      const defaultMembers = [
+        {
+          id: 1,
+          name: "Shreyank",
+          points: 0,
+          image: "./images/shreyank.jpg",
+        },
+        {
+          id: 2,
+          name: "Akshay",
+          points: 0,
+          image: "./images/akshay.jpg",
+        },
+        {
+          id: 3,
+          name: "Shatakshi",
+          points: 0,
+          image: "./images/shatakshi.jpg",
+        },
+        {
+          id: 4,
+          name: "Yuvraj",
+          points: 0,
+          image: "./images/yuvraj.jpg",
+        },
+        {
+          id: 5,
+          name: "Nikhil",
+          points: 0,
+          image: "./images/nikhil.jpg",
+        },
+      ];
+
+      // Example: store in localStorage
+      localStorage.setItem("members", JSON.stringify(defaultMembers));
+      // Set to true to reset members list
+      const RESET_MEMBERS = false;
+
+      if (RESET_MEMBERS || !localStorage.getItem("members")) {
+        localStorage.setItem("members", JSON.stringify(defaultMembers));
+      }
+
+      function renderDashboard() {
+        const container = document.getElementById("teamGrid");
+        container.innerHTML = "";
+
+        let members = JSON.parse(localStorage.getItem("members")) || [];
+
+        members.sort((a, b) => b.points - a.points);
+
+        members.forEach((member, index) => {
+          const card = document.createElement("div");
+          card.className =
+            "bg-white shadow-lg rounded-xl p-4 text-center hover:shadow-2xl transition transform hover:scale-105";
+
+          card.innerHTML = `
+          <img src="${member.image}" alt="${
+            member.name
+          }" class="w-24 h-24 mx-auto rounded-full mb-4 border-4 border-gray-300"/>
+          <h2 class="text-xl font-semibold text-gray-800">${index + 1}. ${
+            member.name
+          }</h2>
+          <p class="text-3xl font-bold text-indigo-600 mt-2">${
+            member.points
+          } pts</p>
+          <a href="member_details.html?id=${member.id}" 
+   class="inline-block mt-4 text-sm text-blue-600 hover:underline font-medium">
+  View Details →
+</a>
+        `;
+
+          container.appendChild(card);
+        });
+      }
+
+      function viewDetails(id) {
+        const members = JSON.parse(localStorage.getItem("members")) || [];
+        const member = members.find((m) => m.id === id);
+        alert(`👤 Name: ${member.name}\n🏅 Points: ${member.points}`);
+      }
+
+      renderDashboard();
+    </script>
+  </body>
+</html>
