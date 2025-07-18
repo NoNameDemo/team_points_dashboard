@@ -110,23 +110,34 @@
         }
       }
 
-      const correctCode = "shreyank@6969";
-
       function verifyCode() {
         const enteredCode = document.getElementById("adminCode").value;
         const errorText = document.getElementById("errorText");
 
-        if (enteredCode === correctCode) {
-          document.getElementById("authModal").style.display = "none";
-          document.getElementById("adminPanel").classList.remove("hidden");
-        } else {
-          errorText.classList.remove("hidden");
-        }
+        fetch(scriptURL, {
+          method: "POST",
+          body: new URLSearchParams({
+            action: "auth",
+            code: enteredCode,
+          }),
+        })
+          .then((res) => res.text())
+          .then((response) => {
+            if (response === "success") {
+              document.getElementById("authModal").style.display = "none";
+              document.getElementById("adminPanel").classList.remove("hidden");
+            } else {
+              errorText.classList.remove("hidden");
+            }
+          })
+          .catch((err) => {
+            console.error("Error verifying admin code:", err);
+            alert("Server error. Try again.");
+          });
       }
-
       // Google Apps Script Web App URL
       const scriptURL =
-        "https://script.google.com/macros/s/AKfycbwzm_o5aomFgJ9E2UnOG8zpcB_nSAMoaT2Lkh6qS2Bt6Ij1bV4jWAc_KLcCPGC71I06Kg/exec";
+        "https://script.google.com/macros/s/AKfycbxC8NB2YK5EV8zLLfUcIF_XN8VRR32genrt2KY6LTp6pEA9RxGwKJuAtssJu_or9p7z/exec";
 
       document
         .getElementById("taskForm")
