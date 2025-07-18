@@ -70,13 +70,10 @@
       ];
 
       // Example: store in localStorage
-      localStorage.setItem("members", JSON.stringify(defaultMembers));
-      // Set to true to reset members list
-      const RESET_MEMBERS = false;
-
-      if (RESET_MEMBERS || !localStorage.getItem("members")) {
-        localStorage.setItem("members", JSON.stringify(defaultMembers));
-      }
+// Only set default members if not already in localStorage
+if (!localStorage.getItem("members")) {
+  localStorage.setItem("members", JSON.stringify(defaultMembers));
+}
 
       function renderDashboard() {
         const container = document.getElementById("teamGrid");
