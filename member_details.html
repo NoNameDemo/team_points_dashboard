@@ -8,6 +8,10 @@
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
     />
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
   </head>
   <body class="bg-gray-50 p-6 font-sans">
     <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
@@ -15,7 +19,7 @@
         Member Details
       </h1>
       <div id="historyList" class="space-y-4">
-        <!-- JS will fill this -->
+        <p class="text-gray-500">Loading...</p>
       </div>
       <button
         onclick="window.history.back()"
@@ -27,40 +31,63 @@
 
     <script>
       const params = new URLSearchParams(window.location.search);
-      const memberId = parseInt(params.get("id"));
-      const members = JSON.parse(localStorage.getItem("members")) || [];
-      const pointHistory =
-        JSON.parse(localStorage.getItem("pointHistory")) || [];
+      const memberName = params.get("name");
+      document.getElementById(
+        "memberName"
+      ).textContent = `${memberName}'s Point History`;
 
-      const member = members.find((m) => m.id === memberId);
-      const memberNameEl = document.getElementById("memberName");
-      const historyList = document.getElementById("historyList");
+      google.charts.load("current", { packages: ["corechart"] });
+      google.charts.setOnLoadCallback(fetchData);
 
-      if (!member) {
-        memberNameEl.textContent = "Member not found";
-      } else {
-        memberNameEl.textContent = `${member.name}'s Point History`;
+      function fetchData() {
+        const queryString = encodeURIComponent("SELECT A, B, C, D");
+        const sheetName = "scoreboard";
+        const spreadsheetId = "1aaAgPi1sC-VsvR39OBuFvAaLTtw3SjHvMrYMIY5_KB8";
+        const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?sheet=${sheetName}&tq=${queryString}`;
 
-        const history = pointHistory.filter((h) => h.name === member.name);
+        fetch(url)
+          .then((res) => res.text())
+          .then((rep) => {
+            const data = JSON.parse(rep.substr(47).slice(0, -2));
+            const rows = data.table.rows;
 
-        if (history.length === 0) {
-          historyList.innerHTML = `<p class="text-gray-500">No point updates yet.</p>`;
-        } else {
-          history.forEach((entry) => {
-            const div = document.createElement("div");
-            div.className = "p-4 bg-gray-100 rounded border";
-            div.innerHTML = `
-            <p><strong>Points:</strong> <span class="${
-              entry.points >= 0 ? "text-green-600" : "text-red-500"
-            }">${entry.points}</span></p>
-            <p><strong>Reason:</strong> ${entry.reason}</p>
-            <p class="text-xs text-gray-500"><strong>Date:</strong> ${
-              entry.date
-            }</p>
-          `;
-            historyList.appendChild(div);
+            const filtered = rows
+              .map((r) => ({
+                name: r.c[0]?.v,
+                score: r.c[1]?.v || 0,
+                reason: r.c[2]?.v || "No reason given",
+                time: r.c[3]?.v || "Unknown",
+              }))
+              .filter((entry) => entry.name === memberName);
+
+            const historyList = document.getElementById("historyList");
+            historyList.innerHTML = "";
+
+            if (filtered.length === 0) {
+              historyList.innerHTML =
+                '<p class="text-gray-500">No point updates yet.</p>';
+            } else {
+              filtered.forEach((entry) => {
+                const div = document.createElement("div");
+                div.className = "p-4 bg-gray-100 rounded border";
+                div.innerHTML = `
+                  <p><strong>Points:</strong> <span class="${
+                    entry.score >= 0 ? "text-green-600" : "text-red-500"
+                  }">${entry.score}</span></p>
+                  <p><strong>Reason:</strong> ${entry.reason}</p>
+                  <p class="text-xs text-gray-500"><strong>Date:</strong> ${
+                    entry.time
+                  }</p>
+                `;
+                historyList.appendChild(div);
+              });
+            }
+          })
+          .catch((err) => {
+            document.getElementById("historyList").innerHTML =
+              '<p class="text-red-500">Failed to load data. Please try again later.</p>';
+            console.error(err);
           });
-        }
       }
     </script>
   </body>
