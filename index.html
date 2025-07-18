@@ -21,12 +21,20 @@
         <h1 class="text-3xl font-bold text-gray-800">
           🏆 Team Points Dashboard
         </h1>
-        <a
-          href="admin.html"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          🔐 Admin
-        </a>
+        <div class="flex gap-2">
+          <a
+            href="admin.html"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+          >
+            🔐 Admin
+          </a>
+          <button
+            onclick="refreshPoints()"
+            class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition"
+          >
+            🔄 Refresh Points
+          </button>
+        </div>
       </div>
 
       <div
@@ -69,11 +77,10 @@
         },
       ];
 
-      // Example: store in localStorage
-// Only set default members if not already in localStorage
-if (!localStorage.getItem("members")) {
-  localStorage.setItem("members", JSON.stringify(defaultMembers));
-}
+      // Initialize localStorage only if not present
+      if (!localStorage.getItem("members")) {
+        localStorage.setItem("members", JSON.stringify(defaultMembers));
+      }
 
       function renderDashboard() {
         const container = document.getElementById("teamGrid");
@@ -89,29 +96,27 @@ if (!localStorage.getItem("members")) {
             "bg-white shadow-lg rounded-xl p-4 text-center hover:shadow-2xl transition transform hover:scale-105";
 
           card.innerHTML = `
-          <img src="${member.image}" alt="${
+            <img src="${member.image}" alt="${
             member.name
           }" class="w-24 h-24 mx-auto rounded-full mb-4 border-4 border-gray-300"/>
-          <h2 class="text-xl font-semibold text-gray-800">${index + 1}. ${
+            <h2 class="text-xl font-semibold text-gray-800">${index + 1}. ${
             member.name
           }</h2>
-          <p class="text-3xl font-bold text-indigo-600 mt-2">${
-            member.points
-          } pts</p>
-          <a href="member_details.html?id=${member.id}" 
-   class="inline-block mt-4 text-sm text-blue-600 hover:underline font-medium">
-  View Details →
-</a>
-        `;
+            <p class="text-3xl font-bold text-indigo-600 mt-2">${
+              member.points
+            } pts</p>
+            <a href="member_details.html?id=${member.id}" 
+               class="inline-block mt-4 text-sm text-blue-600 hover:underline font-medium">
+              View Details →
+            </a>
+          `;
 
           container.appendChild(card);
         });
       }
 
-      function viewDetails(id) {
-        const members = JSON.parse(localStorage.getItem("members")) || [];
-        const member = members.find((m) => m.id === id);
-        alert(`👤 Name: ${member.name}\n🏅 Points: ${member.points}`);
+      function refreshPoints() {
+        renderDashboard();
       }
 
       renderDashboard();
