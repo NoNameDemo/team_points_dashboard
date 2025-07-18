@@ -17,20 +17,22 @@
   </head>
   <body class="min-h-screen p-4">
     <div class="max-w-5xl mx-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">
+      <div
+        class="flex flex-col sm:flex-row sm:justify-between items-center gap-4 mb-6"
+      >
+        <h1 class="text-3xl font-bold text-gray-800 text-center sm:text-left">
           🏆 Team Points Dashboard
         </h1>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <a
             href="admin.html"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+            class="bg-blue-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg shadow hover:bg-blue-700 transition text-center"
           >
             🔐 Admin
           </a>
           <button
             onclick="refreshPoints()"
-            class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition"
+            class="bg-green-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg shadow hover:bg-green-700 transition"
           >
             🔄 Refresh Points
           </button>
