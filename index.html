@@ -31,7 +31,7 @@
             🔐 Admin
           </a>
           <button
-            onclick="refreshPoints()"
+            onclick="renderDashboard()"
             class="bg-green-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg shadow hover:bg-green-700 transition"
           >
             🔄 Refresh Points
@@ -46,79 +46,80 @@
     </div>
 
     <script>
-      const defaultMembers = [
-        {
-          id: 1,
-          name: "Shreyank",
-          points: 0,
-          image: "./images/shreyank.jpg",
-        },
-        {
-          id: 2,
-          name: "Akshay",
-          points: 0,
-          image: "./images/akshay.jpg",
-        },
-        {
-          id: 3,
-          name: "Shatakshi",
-          points: 0,
-          image: "./images/shatakshi.jpg",
-        },
-        {
-          id: 4,
-          name: "Yuvraj",
-          points: 0,
-          image: "./images/yuvraj.jpg",
-        },
-        {
-          id: 5,
-          name: "Nikhil",
-          points: 0,
-          image: "./images/nikhil.jpg",
-        },
-      ];
+      const sheetUrl =
+        "https://opensheet.elk.sh/1aaAgPi1sC-VsvR39OBuFvAaLTtw3SjHvMrYMIY5_KB8/scoreboard";
 
-      // Initialize localStorage only if not present
-      if (!localStorage.getItem("members")) {
-        localStorage.setItem("members", JSON.stringify(defaultMembers));
-      }
+      const memberImages = {
+        Shreyank: "./images/shreyank.jpg",
+        Akshay: "./images/akshay.jpg",
+        Shatakshi: "./images/shatakshi.jpg",
+        Yuvraj: "./images/yuvraj.jpg",
+        Nikhil: "./images/nikhil.jpg",
+      };
 
-      function renderDashboard() {
+      async function renderDashboard() {
         const container = document.getElementById("teamGrid");
-        container.innerHTML = "";
+        container.innerHTML = "<p class='text-gray-700'>Loading...</p>";
 
-        let members = JSON.parse(localStorage.getItem("members")) || [];
+        try {
+          const response = await fetch(sheetUrl);
+          const data = await response.json();
 
-        members.sort((a, b) => b.points - a.points);
+          const scores = {};
 
-        members.forEach((member, index) => {
-          const card = document.createElement("div");
-          card.className =
-            "bg-white shadow-lg rounded-xl p-4 text-center hover:shadow-2xl transition transform hover:scale-105";
+          data.forEach((entry) => {
+            const name = entry.Name?.trim();
+            if (!name) return;
 
-          card.innerHTML = `
-            <img src="${member.image}" alt="${
-            member.name
-          }" class="w-24 h-24 mx-auto rounded-full mb-4 border-4 border-gray-300"/>
-            <h2 class="text-xl font-semibold text-gray-800">${index + 1}. ${
-            member.name
-          }</h2>
-            <p class="text-3xl font-bold text-indigo-600 mt-2">${
-              member.points
-            } pts</p>
-            <a href="member_details.html?id=${member.id}" 
-               class="inline-block mt-4 text-sm text-blue-600 hover:underline font-medium">
-              View Details →
-            </a>
-          `;
+            // Fix: Trim the score field key
+            const scoreField = Object.keys(entry).find(
+              (key) => key.trim() === "Score"
+            );
+            const rawScore = entry[scoreField]?.trim() || "0";
+            const points = parseInt(rawScore.replace("+", "")) || 0;
 
-          container.appendChild(card);
-        });
-      }
+            if (!scores[name]) {
+              scores[name] = { name, points: 0 };
+            }
+            scores[name].points += points;
+          });
 
-      function refreshPoints() {
-        renderDashboard();
+          const sorted = Object.values(scores).sort(
+            (a, b) => b.points - a.points
+          );
+          container.innerHTML = "";
+
+          sorted.forEach((member, index) => {
+            const imgSrc = memberImages[member.name] || "./images/default.jpg";
+            const card = document.createElement("div");
+            card.className =
+              "bg-white shadow-lg rounded-xl p-4 text-center hover:shadow-2xl transition transform hover:scale-105";
+
+            card.innerHTML = `
+              <img src="${imgSrc}" alt="${
+              member.name
+            }" class="w-24 h-24 mx-auto rounded-full mb-4 border-4 border-gray-300"/>
+              <h2 class="text-xl font-semibold text-gray-800">${index + 1}. ${
+              member.name
+            }</h2>
+              <p class="text-3xl font-bold text-indigo-600 mt-2">${
+                member.points
+              } pts</p>
+              <a href="member_details.html?name=${encodeURIComponent(
+                member.name
+              )}" 
+                 class="inline-block mt-4 text-sm text-blue-600 hover:underline font-medium">
+                View Details →
+              </a>
+            `;
+
+            container.appendChild(card);
+          });
+        } catch (err) {
+          console.error("Failed to load data:", err);
+          container.innerHTML =
+            "<p class='text-red-500'>Failed to load data. Please try again later.</p>";
+        }
       }
 
       renderDashboard();
