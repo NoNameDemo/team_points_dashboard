@@ -82,106 +82,83 @@
         >
           Submit Points
         </button>
-        
       </form>
-      <div class="mt-6">
+      <hr class="my-6" />
       <button
-        onclick="resetAllData()"
-        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+        onclick="resetAllScores()"
+        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 w-full"
       >
-        🔁 Reset All Points & History
+        🧹 Reset All Scores
       </button>
     </div>
-  </div>
-    </div>
 
-   <!-- Scripts -->
-  <script>
-    const correctCode = "shreyank@6969";
-
-    const defaultMembers = [
-      { id: 1, name: "Shreyank", points: 0 },
-      { id: 2, name: "Akshay", points: 0 },
-      { id: 3, name: "Shatakshi", points: 0 },
-      { id: 4, name: "Yuvraj", points: 0 },
-      { id: 5, name: "Nikhil", points: 0 },
-    ];
-
-    // Load members from localStorage or fallback to default
-    let members =
-      JSON.parse(localStorage.getItem("members")) || defaultMembers;
-    localStorage.setItem("members", JSON.stringify(members));
-
-    function verifyCode() {
-      const enteredCode = document.getElementById("adminCode").value;
-      const errorText = document.getElementById("errorText");
-
-      if (enteredCode === correctCode) {
-        document.getElementById("authModal").style.display = "none";
-        document.getElementById("adminPanel").classList.remove("hidden");
-      } else {
-        errorText.classList.remove("hidden");
-      }
-    }
-
-    document.getElementById("taskForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      const memberName = document.getElementById("memberSelect").value;
-      const points = parseInt(document.getElementById("pointsInput").value);
-      const reason = document.getElementById("reasonInput").value;
-
-      if (isNaN(points)) {
-        alert("Please enter a valid number for points.");
-        return;
+    <script>
+      function resetAllScores() {
+        if (
+          confirm(
+            "⚠️ Are you sure you want to reset all scores? This cannot be undone."
+          )
+        ) {
+          fetch(`${scriptURL}?action=reset`, { method: "POST" })
+            .then(() => {
+              alert("✅ All scores have been reset.");
+            })
+            .catch((err) => {
+              console.error("Reset error:", err);
+              alert("❌ Failed to reset scores.");
+            });
+        }
       }
 
-      const memberIndex = members.findIndex((m) => m.name === memberName);
-      if (memberIndex === -1) {
-        alert("Member not found.");
-        return;
+      const correctCode = "shreyank@6969";
+
+      function verifyCode() {
+        const enteredCode = document.getElementById("adminCode").value;
+        const errorText = document.getElementById("errorText");
+
+        if (enteredCode === correctCode) {
+          document.getElementById("authModal").style.display = "none";
+          document.getElementById("adminPanel").classList.remove("hidden");
+        } else {
+          errorText.classList.remove("hidden");
+        }
       }
 
-      // Update member points
-      members[memberIndex].points += points;
-      localStorage.setItem("members", JSON.stringify(members));
+      // Google Apps Script Web App URL
+      const scriptURL =
+        "https://script.google.com/macros/s/AKfycbwzm_o5aomFgJ9E2UnOG8zpcB_nSAMoaT2Lkh6qS2Bt6Ij1bV4jWAc_KLcCPGC71I06Kg/exec";
 
-      // Update point history
-      let pointHistory =
-        JSON.parse(localStorage.getItem("pointHistory")) || [];
-      pointHistory.push({
-        name: memberName,
-        points: points,
-        reason: reason,
-        date: new Date().toLocaleString(),
-      });
-      localStorage.setItem("pointHistory", JSON.stringify(pointHistory));
+      document
+        .getElementById("taskForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
 
-      alert(
-        `✅ ${memberName}'s points updated by ${points}.\n📝 Reason: ${reason}`
-      );
-      document.getElementById("taskForm").reset();
-    });
+          const name = document.getElementById("memberSelect").value;
+          const points = document.getElementById("pointsInput").value;
+          const reason = document.getElementById("reasonInput").value;
+          const time = new Date().toLocaleString();
 
-    // 🔁 Reset All Data Function
-    function resetAllData() {
-      if (
-        confirm(
-          "⚠️ Are you sure you want to reset all points and history? This cannot be undone."
-        )
-      ) {
-        const resetMembers = members.map((m) => ({
-          ...m,
-          points: 0,
-        }));
+          if (!points || isNaN(points)) {
+            alert("❌ Please enter a valid number of points.");
+            return;
+          }
 
-        localStorage.setItem("members", JSON.stringify(resetMembers));
-        localStorage.removeItem("pointHistory");
+          const formData = new FormData();
+          formData.append("Name", name);
+          formData.append("Points", points);
+          formData.append("Reason", reason);
+          formData.append("Time", time);
 
-        alert("✅ All points and history have been reset.");
-        location.reload(); // Optional: refresh to reflect reset
-      }
-    }
-  </script>
+          fetch(scriptURL, { method: "POST", body: formData })
+            .then(() => {
+              alert(`✅ Points submitted for ${name}`);
+              document.getElementById("taskForm").reset();
+            })
+            .catch((error) => {
+              console.error("Error!", error.message);
+              alert("❌ Failed to submit. Try again.");
+            });
+        });
+    </script>
   </body>
 </html>
